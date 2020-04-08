@@ -2,9 +2,9 @@ import ScrapeHelper
 from JobPostModule import JobPost
 
 # USER INPUT GOES HERE!
-search_terms = ('data science', 'data center', 'IT')
-search_locales = (('Washington', 'DC'), ('New York', 'NY'), ('Chicago', 'IL'))
-pages = 3
+search_terms = ('data science')#, 'data center', 'IT')
+search_locales = (('Washington', 'DC'), ('New York', 'NY'))#, ('Chicago', 'IL'))
+pages = 1
 
 # variables
 master_job_list = []
