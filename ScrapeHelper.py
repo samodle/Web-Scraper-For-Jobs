@@ -2,7 +2,6 @@ import requests
 from bs4 import BeautifulSoup
 from JobPostModule import JobPost
 
-
 def get_indeed_url(search_term, search_page_number=0, search_city='', search_state=''):
     """Returns URL that queries Indeed for the given search term at the given location.
     search_page_number counts from 0! """
