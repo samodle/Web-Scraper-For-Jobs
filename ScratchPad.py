@@ -25,9 +25,14 @@ for script in big_soup(["script", "style"]):  # remove all javascript and styles
 #    div2.decompose()
 
 # Ok ok I think we're ready...
-jesus_take_the_wheel = big_soup.find_all("div", class_='jobsearch-jobDescriptionText')
+jesus_take_the_wheel = big_soup.find("div", class_='jobsearch-jobDescriptionText')
+print(jesus_take_the_wheel.prettify())
 
-for x0 in jesus_take_the_wheel:
-    print(x0.prettify())
+print('xxxxxxxxxxxxxxxxx')
+
+rating_section = big_soup.find("meta", itemprop='ratingValue')
+print('Employer Rating:' + rating_section.get('content'))
+
+print('xxxxxxxxxxxxxxxxx')
 
 #print(big_soup.prettify())
