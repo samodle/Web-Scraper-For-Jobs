@@ -4,8 +4,8 @@ import datetime
 from JobPostModule import JobPost
 
 # CUSTOMIZE YOUR SCAPING BY EDITING THESE VARIABLES
-search_terms = ('data science', 'data center', 'IT')
-search_locales = (('Washington', 'DC'), ('New York', 'NY'), ('Chicago', 'IL'), ('San Jose', 'CA'))
+search_terms = ('data science', 'data center', 'IT', 'customer support',  'customer experience', 'amazon', 'microsoft', 'google', 'facebook', 'zoom', 'slack') #roles from diagram
+search_locations = (('Washington', 'DC'), ('New York', 'NY'), ('Chicago', 'IL'), ('San Jose', 'CA')) #  boston , san francisco, seattle, philadephia, atlanta, houston, austin,
 pages = 5
 
 # These parameters affect how the scrape will run
@@ -19,13 +19,14 @@ master_job_list = []
 if not only_do_one:
     for term in search_terms:
         print('Scraping...' + term)
-        for locale in search_locales:
-            print('Scraping...' + locale[0] + ' ' + locale[1])
+        for locale in search_locations:
+            print('        Scraping...' + locale[0] + ' ' + locale[1])
             for page in range(0, pages):
                 target_url = IndeedScrapeHelper.get_indeed_url(term, page, locale[0], locale[1])
                 master_job_list.append(IndeedScrapeHelper.get_indeed_urls(target_url))
+                print('            pg' + str(page))
 else:
-    target_url = IndeedScrapeHelper.get_indeed_url(search_terms[0], 1, search_locales[0][0], search_locales[0][1])
+    target_url = IndeedScrapeHelper.get_indeed_url(search_terms[0], 1, search_locations[0][0], search_locations[0][1])
     master_job_list.append(IndeedScrapeHelper.get_indeed_urls(target_url))
 
 if export_to_csv:
