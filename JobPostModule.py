@@ -19,3 +19,12 @@ class JobPost:
 
     def get_csv_string(self):
         return '[[' + self.job_title + ', ' + self.company + ', ' + self.location + ',' + self.company_rating + ', ' + self.salary + ', ' + self.commitment_level + ',' + self.url + ']]' #  ',' + self.description + ']'
+
+    """
+    ███████╗ ██████╗ ██████╗ ██╗  ██╗
+    ██╔════╝██╔═══██╗██╔══██╗██║ ██╔╝
+    █████╗  ██║   ██║██████╔╝█████╔╝
+    ██╔══╝  ██║   ██║██╔══██╗██╔═██╗
+    ██║     ╚██████╔╝██║  ██║██║  ██╗
+    ╚═╝      ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝                 
+    """

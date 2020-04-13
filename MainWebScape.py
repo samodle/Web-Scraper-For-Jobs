@@ -3,10 +3,12 @@ import csv
 import datetime
 from JobPostModule import JobPost
 
-# USER INPUT GOES HERE!
+# CUSTOMIZE YOUR SCAPING BY EDITING THESE VARIABLES
 search_terms = ('data science', 'data center', 'IT')
 search_locales = (('Washington', 'DC'), ('New York', 'NY'), ('Chicago', 'IL'), ('San Jose', 'CA'))
 pages = 5
+
+# These parameters affect how the scrape will run
 only_do_one = False
 export_to_csv = True  # as opposed to printing data in the console
 
@@ -16,7 +18,9 @@ master_job_list = []
 # specify the url
 if not only_do_one:
     for term in search_terms:
+        print('Scraping...' + term)
         for locale in search_locales:
+            print('Scraping...' + locale[0] + ' ' + locale[1])
             for page in range(0, pages):
                 target_url = IndeedScrapeHelper.get_indeed_url(term, page, locale[0], locale[1])
                 master_job_list.append(IndeedScrapeHelper.get_indeed_urls(target_url))
@@ -26,7 +30,7 @@ else:
 
 if export_to_csv:
     now = datetime.datetime.now()
-    new_csv_file = open("JobPostExport-" + str(now.day) + str(now.hour) + str(now.minute) + str(now.second) + ".csv", "w", newline='')
+    new_csv_file = open("IndeedJobPostExport-" + str(now.day) + str(now.hour) + str(now.minute) + str(now.second) + ".csv", "w", newline='')
     writer = csv.writer(new_csv_file)
     fields = ['Name', 'Company', 'Location', 'Indeed Company Rating', 'Salary', 'Commitment', 'URL', 'Description']
     writer.writerow(fields)
@@ -43,5 +47,11 @@ for x in master_job_list:
 if export_to_csv:
     new_csv_file.close()
 
-
-
+"""
+███████╗ ██████╗ ██████╗ ██╗  ██╗
+██╔════╝██╔═══██╗██╔══██╗██║ ██╔╝
+█████╗  ██║   ██║██████╔╝█████╔╝
+██╔══╝  ██║   ██║██╔══██╗██╔═██╗
+██║     ╚██████╔╝██║  ██║██║  ██╗
+╚═╝      ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝                 
+"""
