@@ -1,6 +1,8 @@
 import IndeedScrapeHelper
 import csv
 import datetime
+import CityData as city
+import pandas as pd
 from JobPostModule import JobPost
 
 # CUSTOMIZE YOUR SCAPING BY EDITING THESE VARIABLES
@@ -8,8 +10,9 @@ search_terms = ('data science', 'data center', 'IT', 'customer support',  'custo
 search_locations = (('Washington', 'DC'), ('New York', 'NY'), ('Chicago', 'IL'), ('San Jose', 'CA')) #  boston , san francisco, seattle, philadephia, atlanta, houston, austin,
 pages = 5
 
+search_locations_usa = city.import_city_data()
 # These parameters affect how the scrape will run
-only_do_one = False
+only_do_one = True
 export_to_csv = True  # as opposed to printing data in the console
 
 # variables
@@ -26,7 +29,7 @@ if not only_do_one:
                 master_job_list.append(IndeedScrapeHelper.get_indeed_urls(target_url))
                 print('            pg' + str(page))
 else:
-    target_url = IndeedScrapeHelper.get_indeed_url(search_terms[0], 1, search_locations[0][0], search_locations[0][1])
+    target_url = IndeedScrapeHelper.get_indeed_url(search_terms[0], 1, search_locations_usa.get_value('0', 'city'), search_locations_usa.get_value('0',  'state_id'))
     master_job_list.append(IndeedScrapeHelper.get_indeed_urls(target_url))
 
 if export_to_csv:
