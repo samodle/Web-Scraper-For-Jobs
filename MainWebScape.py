@@ -26,18 +26,18 @@ if not only_do_one:
         print('Scraping...' + term)
         if use_custom_locations:
             for locale in custom_search_locations:
-                print('        Scraping...' + locale[0] + ' ' + locale[1])
+                print('        ...' + locale[0] + ' ' + locale[1])
                 for page in range(0, pages):
                     target_url = IndeedScrapeHelper.get_indeed_url(term, page, locale[0], locale[1])
                     master_job_list.append(IndeedScrapeHelper.get_indeed_urls(target_url))
-                    print('            pg' + str(page))
+                    print('                 pg ' + str(page))
         else:  # using Census data for cities, sorted by population
             for city in range(0, num_cities):
-                print('        Scraping...' + search_locations_usa.loc[city, 'city'] + ' ' + search_locations_usa.loc[city, 'state_id'])
+                print('        ...' + search_locations_usa.loc[city, 'city'] + ' ' + search_locations_usa.loc[city, 'state_id'])
                 for page in range(0, pages):
                     target_url = IndeedScrapeHelper.get_indeed_url(term, page, search_locations_usa.loc[city, 'city'], search_locations_usa.loc[city, 'state_id'])
                     master_job_list.append(IndeedScrapeHelper.get_indeed_urls(target_url))
-                    print('            pg' + str(page))
+                    print('                 pg ' + str(page))
 else:
     target_url = IndeedScrapeHelper.get_indeed_url(search_terms[0], 1, search_locations_usa.loc[0, 'city'],
                                                    search_locations_usa.loc[0, 'state_id'])
@@ -52,12 +52,16 @@ if export_to_csv:
     fields = ['Name', 'Company', 'Location', 'Indeed Company Rating', 'Salary', 'Commitment', 'URL', 'Description']
     writer.writerow(fields)
 
+print('Scrape complete.  Beginning to write data.')
+
 for x in master_job_list:
     for y in x:
         IndeedScrapeHelper.complete_job_profile(y)
         if export_to_csv:
+            #  new_row = [y.job_title, y.company, y.location, y.company_rating, y.salary, y.commitment_level, y.url,
+            #           y.description.encode('utf-8', errors='replace')]
             new_row = [y.job_title, y.company, y.location, y.company_rating, y.salary, y.commitment_level, y.url,
-                       y.description.encode('utf-8', errors='replace')]
+                       y.description.encode('unicode_escape', errors='replace')]
             writer.writerow(new_row)
         else:
             print(str(y))
