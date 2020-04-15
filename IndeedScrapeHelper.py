@@ -99,7 +99,8 @@ def complete_job_profile(job_post: JobPost):
 
     # Ok ok I think we're ready...
     primary_description = big_soup.find("div", class_='jobsearch-jobDescriptionText')
-    job_post.description = primary_description.text
+    if not primary_description is None:
+        job_post.description = primary_description.text
 
     rating_section = big_soup.find("meta", itemprop='ratingValue')
     if not rating_section is None:
