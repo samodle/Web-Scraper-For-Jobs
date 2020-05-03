@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from JobPostModule import JobPost
+from Classes.JobPostModule import JobPost
 
 
 def get_indeed_url(search_term, search_page_number=0, search_city='', search_state=''):
@@ -22,8 +22,8 @@ def get_indeed_url(search_term, search_page_number=0, search_city='', search_sta
         return base_url + search_term + '&l=' + search_city + search_state
 
 
-def get_indeed_urls(target_url):
-    """Given a url, returns a list of tuples: (Job Name, Url)"""
+def get_indeed_job_posts(target_url, search_term):
+    """Given a url, returns a list of objects of instance JobPost"""
 
     # custom parameters
     unknown_string = 'UNKNOWN'
@@ -77,7 +77,7 @@ def get_indeed_urls(target_url):
                     else:
                         location = unknown_string
 
-                    url_list.append(JobPost(job_title=names, url=links, company=company, location=location))
+                    url_list.append(JobPost(job_title=names, url=links, company=company, location=location, search_term=search_term, source='Indeed'))
                     # print(names + ' -- ' + location + ' -- ' + company + ' -- ' + links)
                 else:
                     seen_by_indeed_count += 1

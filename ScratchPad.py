@@ -1,11 +1,10 @@
-import IndeedScrapeHelper
-from JobPostModule import JobPost
-import requests
-from bs4 import BeautifulSoup
 import pandas as pd
+import pymongo
 
-raw_city_data = pd.read_csv("IndeedJobPostExport-1592231.csv", encoding='unicode_escape')
-print(' ')
+client = pymongo.MongoClient('localhost', 27017)
+db = client["testdb"]  # makes a test database called "test"
+collection = db["testcoll"]  # makes a collection called "test" in the "test" db
+collection.insert_one({"foo": "bar"})  # add a document
 
 """
 ███████╗ ██████╗ ██████╗ ██╗  ██╗
