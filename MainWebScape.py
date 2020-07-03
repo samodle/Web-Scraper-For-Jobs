@@ -2,31 +2,31 @@ from WebScraper import IndeedScrapeHelper
 import csv
 import datetime
 from CensusData import CityData as city
-import pymongo
+import boto3
 
 # CUSTOMIZE YOUR SCRAPING BY EDITING THESE VARIABLES
-master_list_of_search_terms = ('customer support', 'customer experience', 'data center', 'help desk', 'amazon',
-                               'microsoft', 'zoom',
-                               'slack')
+master_list_of_search_terms = ('customer support', 'customer experience', 'data center', 'help desk', 'technician',
+                               'slack', 'server', 'recruiter', 'computer', 'product', 'assistant', 'genius')
 
-search_terms = master_list_of_search_terms[0:7]
+search_terms = master_list_of_search_terms[0:10]
 custom_search_locations = (('Washington', 'DC'), ('New York', 'NY'), ('Chicago', 'IL'), ('San Jose', 'CA'))
 pages = 20
-num_cities = 20
+num_cities = 50
+jobs_per_csv = 10000
+next_file_save_count = jobs_per_csv
 
 search_locations_usa = city.import_city_data()
 # These parameters affect how the scrape will run
-only_do_one = True  # if only_do_one is true, the scrape will query 1 indeed search page
+only_do_one = False  # if only_do_one is true, the scrape will query 1 indeed search page
 
 # only does one or the other (ie csv || db export)
-export_to_csv = False  # as opposed to printing data in the console
-export_to_db = True
+export_to_csv = True  # as opposed to printing data in the console
+export_to_db = False
 
 use_custom_locations = False  # option to enter your own search locations instead of picking n top locations
 
-# MongoDB parameters
-db_name = "jobs"
-db_collection_name = "rawjobdata"
+# DB parameters
+table_name_jobs = "JobPost"
 
 # variables
 master_job_list = []
@@ -66,17 +66,34 @@ if export_to_csv:
               'Search Term', 'Date of Scrape', 'Source']
     writer.writerow(fields)
 elif export_to_db:
-    client = pymongo.MongoClient('localhost', 27017, username='forkMVP7', password='future0fWork')
-    db = client["forkdb"]  # makes a test database called "test"
-    collection = db["jobcoll"]  # makes a collection called "test" in the "test" db
+    # Creating the DynamoDB Client
+    dynamodb_client = boto3.client('dynamodb')
+    # Creating the DynamoDB Table Resource
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table(table_name_jobs)
 
 # how many did we find
 
 print('Scrape complete.  Beginning to write data.')
 
+job_found_count = 0
+csv_file_count: int = 0
+
 for x in master_job_list:
     try:
-        print('Jobs Found: ' + str(len(x)))
+        job_found_count = job_found_count + len(x)
+        print('Jobs Found: ' + str(len(x)) + ', Net: ' + str(job_found_count))
+        print('csv files generated: ' + str(csv_file_count))
+        if job_found_count > next_file_save_count:
+            new_csv_file.close()
+            csv_file_count += 1
+            next_file_save_count += jobs_per_csv
+            now = datetime.datetime.now()
+            new_csv_file = open(
+                "IndeedJobPostExport-" + str(now.day) + str(now.hour) + str(now.minute) + str(now.second) + "-" + str(csv_file_count) + ".csv", "w",
+                newline='')
+            writer = csv.writer(new_csv_file)
+            writer.writerow(fields)
     except:
         print(' oops  ')
     for y in x:
@@ -95,37 +112,34 @@ for x in master_job_list:
                                y.source]
                     writer.writerow(new_row)
                     print('Writing: ' + y.job_title)
-                except:
+                except Exception as e:
                     print(IndeedScrapeHelper.print_error_string(
                         'csv error: ' + y.job_title + ' ' + y.search_term + ' ' + y.location))
             elif export_to_db:
                 try:
-                    new_job = {"title": y.job_title,
-                               "company": y.company,
-                               "location": y.location,
-                               "rating": y.company_rating,
-                               "salary": y.salary,
-                               "commitment": y.commitment_level,
-                               "url": y.url,
-                               "search_term": y.search_term,
-                               "source": y.source,
-                               "description": y.description.encode('unicode_escape', errors='replace')
-                               }
-                    collection.insert_one(new_job)
-                except:
+                    with table.batch_writer() as batch:
+                        batch.put_item(
+                            Item={
+                                "JobTitle": y.job_title,
+                                "CompanyID": 0,
+                                "company": y.company,
+                                "location": y.location,
+                                "rating": y.company_rating,
+                                "salary": y.salary,
+                                "commitment": y.commitment_level,
+                                "url": y.url,
+                                "search_term": y.search_term,
+                                "source": y.source,
+                                "description": y.description.encode('unicode_escape', errors='replace')
+                            }
+                        )
+
+                except Exception as e:
                     print(IndeedScrapeHelper.print_error_string(
-                        'database error: ' + y.job_title + ' ' + y.search_term + ' ' + y.location))
+                        'database error: ' + y.job_title + ' ' + y.search_term + ' ' + y.location + '\n' + str(e)))
             else:
                 print(str(y))
 
 if export_to_csv:
     new_csv_file.close()
 
-"""
-███████╗ ██████╗ ██████╗ ██╗  ██╗
-██╔════╝██╔═══██╗██╔══██╗██║ ██╔╝
-█████╗  ██║   ██║██████╔╝█████╔╝
-██╔══╝  ██║   ██║██╔══██╗██╔═██╗
-██║     ╚██████╔╝██║  ██║██║  ██╗
-╚═╝      ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝                 
-"""

@@ -1,8 +1,28 @@
-import pandas as pd
-import pymongo
+import boto3
+from DynamoConfig import makeADynamoDBTable
 
-client = pymongo.MongoClient('localhost', 27017, username='forkMVP7', password='future0fWork')
-db = client["testdb"]  # makes a test database called "test"
-collection = db["testcoll"]  # makes a collection called "test" in the "test" db
-collection.insert_one({"foo": "bar"})  # add a document
+#makeADynamoDBTable()
+
+TABLE_NAME = "JobPost"
+
+# Creating the DynamoDB Client
+dynamodb_client = boto3.client('dynamodb')
+
+# Creating the DynamoDB Table Resource
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table(TABLE_NAME)
+
+print(table.creation_date_time)
+
+table.put_item(
+   Item={
+        'JobTitle': 'janedoe',
+        'CompanyID': 255,
+        'last_name': 'Doe',
+       # 'age': 25,
+       # 'account_type': 'standard_user',
+    }
+)
+
+
 
