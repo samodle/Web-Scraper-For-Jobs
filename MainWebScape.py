@@ -1,4 +1,5 @@
 from WebScraper import IndeedScrapeHelper
+from WebScraper import MonsterScrapeHelper
 import csv
 import datetime
 from CensusData import CityData as city
@@ -17,7 +18,11 @@ next_file_save_count = jobs_per_csv
 
 search_locations_usa = city.import_city_data()
 # These parameters affect how the scrape will run
-only_do_one = False  # if only_do_one is true, the scrape will query 1 indeed search page
+only_do_one = True  # if only_do_one is true, the scrape will query 1 indeed search page
+
+# Select websites to scrape posts from
+scrape_indeed = False
+scrape_monster = True
 
 # only does one or the other (ie csv || db export)
 export_to_csv = True  # as opposed to printing data in the console
@@ -30,6 +35,7 @@ table_name_jobs = "JobPost"
 
 # variables
 master_job_list = []
+master_monster_job_list = []
 
 # specify the url
 if not only_do_one:
@@ -52,9 +58,14 @@ if not only_do_one:
                     master_job_list.append(IndeedScrapeHelper.get_indeed_job_posts(target_url, term))
                     print('                 pg ' + str(page + 1))
 else:
-    target_url = IndeedScrapeHelper.get_indeed_url(search_terms[0], 1, search_locations_usa.loc[0, 'city'],
-                                                   search_locations_usa.loc[0, 'state_id'])
-    master_job_list.append(IndeedScrapeHelper.get_indeed_job_posts(target_url, search_terms[0]))
+    if scrape_indeed:
+        target_url = IndeedScrapeHelper.get_indeed_url(search_terms[0], 1, search_locations_usa.loc[0, 'city'],
+                                                       search_locations_usa.loc[0, 'state_id'])
+        master_job_list.append(IndeedScrapeHelper.get_indeed_job_posts(target_url, search_terms[0]))
+    if scrape_monster:
+        target_monster_url = MonsterScrapeHelper.get_monster_url(search_terms[0], 1, search_locations_usa.loc[0, 'city'],
+                                                       search_locations_usa.loc[0, 'state_id'])
+        master_monster_job_list.append(IndeedScrapeHelper.get_indeed_job_posts(target_monster_url, search_terms[0]))
 
 if export_to_csv:
     now = datetime.datetime.now()
