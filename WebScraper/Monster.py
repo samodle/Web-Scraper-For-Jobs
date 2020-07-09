@@ -77,7 +77,7 @@ def get_job_posts(target_url, search_term):
                 names = x0.get_text().strip('\n')
                 names = names.replace('\r', '')
 
-                print(names + ' -- ' + location + ' -- ' + company + ' -- ' + links)
+                # print(names + ' -- ' + location + ' -- ' + company + ' -- ' + links)
                 url_list.append(
                     JobPost(job_title=names, url=links, company=company, location=location, search_term=search_term,
                             source=ScrapeHelper.MONSTER))
