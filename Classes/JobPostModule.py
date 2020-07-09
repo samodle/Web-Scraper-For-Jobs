@@ -19,11 +19,3 @@ class JobPost:
     def __str__(self):
         return self.job_title + ', ' + self.company + ', ' + self.location + '\n' + self.company_rating + ', ' + self.salary + ', ' + self.commitment_level + '\n' + self.url
 
-    """
-    ███████╗ ██████╗ ██████╗ ██╗  ██╗
-    ██╔════╝██╔═══██╗██╔══██╗██║ ██╔╝
-    █████╗  ██║   ██║██████╔╝█████╔╝
-    ██╔══╝  ██║   ██║██╔══██╗██╔═██╗
-    ██║     ╚██████╔╝██║  ██║██║  ██╗
-    ╚═╝      ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝                 
-    """

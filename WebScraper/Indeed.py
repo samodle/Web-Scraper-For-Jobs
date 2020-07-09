@@ -1,9 +1,10 @@
 import requests
+from WebScraper import ScrapeHelper
 from bs4 import BeautifulSoup
 from Classes.JobPostModule import JobPost
 
 
-def get_indeed_url(search_term, search_page_number=0, search_city='', search_state=''):
+def get_url(search_term, search_page_number=0, search_city='', search_state=''):
     """Returns URL that queries Indeed for the given search term at the given location.
     search_page_number counts from 0! """
 
@@ -22,7 +23,7 @@ def get_indeed_url(search_term, search_page_number=0, search_city='', search_sta
         return base_url + search_term + '&l=' + search_city + search_state
 
 
-def get_indeed_job_posts(target_url, search_term):
+def get_job_posts(target_url, search_term):
     """Given a url, returns a list of objects of instance JobPost"""
 
     # custom parameters
@@ -55,7 +56,7 @@ def get_indeed_job_posts(target_url, search_term):
     parent_search_section = big_soup.find_all('div', class_='jobsearch-SerpJobCard unifiedRow row result')
 
     if parent_search_section is None:
-        print_error_string(big_soup.prettify())
+        ScrapeHelper.print_error_string(big_soup.prettify())
     else:
         for x02 in parent_search_section:
             # print(x02.prettify())
@@ -77,15 +78,18 @@ def get_indeed_job_posts(target_url, search_term):
                     else:
                         location = unknown_string
 
-                    url_list.append(JobPost(job_title=names, url=links, company=company, location=location, search_term=search_term, source='Indeed'))
+                    url_list.append(
+                        JobPost(job_title=names, url=links, company=company, location=location, search_term=search_term,
+                                source=ScrapeHelper.INDEED))
                     # print(names + ' -- ' + location + ' -- ' + company + ' -- ' + links)
                 else:
                     seen_by_indeed_count += 1
             except:
-                print_error_string(x02.prettify())
+                ScrapeHelper.print_error_string(x02.prettify())
 
     # print('Seen By Indeed: ' + str(seen_by_indeed_count))
     return url_list
+
 
 def complete_job_profile(job_post: JobPost):
     page = requests.get(job_post.url)
@@ -119,18 +123,7 @@ def complete_job_profile(job_post: JobPost):
 
     return
 
-def print_error_string(message):
-    """prints clearly separated error message in console"""
-    print('xxxxxxxxx ERROR  ERROR  ERROR xxxxxxxxxx')
-    print(message)
-    print('xxxxxxxxxxxxxxxxxxxxxxxxxxx')
-    return
 
-"""
-███████╗ ██████╗ ██████╗ ██╗  ██╗
-██╔════╝██╔═══██╗██╔══██╗██║ ██╔╝
-█████╗  ██║   ██║██████╔╝█████╔╝
-██╔══╝  ██║   ██║██╔══██╗██╔═██╗
-██║     ╚██████╔╝██║  ██║██║  ██╗
-╚═╝      ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝                 
-"""
+
+
+
