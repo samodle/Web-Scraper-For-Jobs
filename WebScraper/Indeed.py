@@ -39,7 +39,7 @@ def get_job_posts(target_url, search_term):
     # Create a BeautifulSoup object
     big_soup = BeautifulSoup(page.text, 'html.parser')
 
-    # Let's clean this mess up
+    # Let's clean this up
     for script in big_soup(["script", "style"]):  # remove all javascript and stylesheet code
         script.decompose()
 
@@ -52,7 +52,6 @@ def get_job_posts(target_url, search_term):
     for div2 in big_soup.find_all("div", {'class': 'tab-container'}):
         div2.decompose()
 
-    # Ok ok I think we're ready...
     parent_search_section = big_soup.find_all('div', class_='jobsearch-SerpJobCard unifiedRow row result')
 
     if parent_search_section is None:
@@ -94,6 +93,9 @@ def get_job_posts(target_url, search_term):
 def complete_job_profile(job_post: JobPost):
     page = requests.get(job_post.url)
 
+    #encoding = r.encoding if 'charset' in r.headers.get('content-type', '').lower() else None
+    #soup = BeautifulSoup(r.content, from_encoding=encoding)
+
     # Create a BeautifulSoup object
     big_soup = BeautifulSoup(page.text, 'html.parser')
 
@@ -104,22 +106,19 @@ def complete_job_profile(job_post: JobPost):
     # Ok ok I think we're ready...
     primary_description = big_soup.find("div", class_='jobsearch-jobDescriptionText')
     if not primary_description is None:
-        job_post.description = primary_description.text
+        job_post.description = primary_description.get_text().replace('\n', ' ')
 
     rating_section = big_soup.find("meta", itemprop='ratingValue')
     if not rating_section is None:
         job_post.company_rating = rating_section.get('content')
-        # print('Employer Rating:' + job_post.company_rating)
 
     salary_section = big_soup.find("span", class_='icl-u-xs-mr--xs')
     if not salary_section is None:
         job_post.salary = salary_section.text
-        # print('Salary:' + salary_section.text)
 
     time_section = big_soup.find("span", class_='jobsearch-JobMetadataHeader-item icl-u-xs-mt--xs')
     if not time_section is None:
         job_post.commitment_level = time_section.text
-        # print('Commitment Level:' + time_section.text)
 
     return
 

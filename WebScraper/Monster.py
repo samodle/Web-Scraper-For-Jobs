@@ -82,7 +82,7 @@ def get_job_posts(target_url, search_term):
                     JobPost(job_title=names, url=links, company=company, location=location, search_term=search_term,
                             source=ScrapeHelper.MONSTER))
         except Exception as e:
-            ScrapeHelper.print_error_string(e + "Job Cards Not Found")
+            ScrapeHelper.print_error_string(str(e) + "Job Cards Not Found")
 
     return url_list
 
@@ -106,6 +106,6 @@ def complete_job_profile(job_post: JobPost):
     # print(x0.prettify())
 
     if not x0 is None:
-        job_post.description = x0.text
+        job_post.description = x0.get_text().replace('\n', ' ')
 
     return
