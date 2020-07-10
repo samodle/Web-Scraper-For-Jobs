@@ -56,13 +56,13 @@ for term in search_terms:
             temp_list = Indeed.get_job_posts(target_url, term)
             jobs_found = jobs_found + len(temp_list)
             master_job_list.append(temp_list)
-            print('Indeed No Location pg ' + str(page + 1) + ', Jobs: ' + len(temp_list))
+            print('Indeed No Location pg ' + str(page + 1) + ', Jobs: ' + str(len(temp_list)))
     if scrape_monster:
         target_url = Monster.get_url(term, monster_pages)
         temp_list = Monster.get_job_posts(target_url, term)
         jobs_found = jobs_found + temp_list.count
         master_job_list.append(temp_list)
-        print('Monster No Location Page' + ', Jobs: ' + len(temp_list))
+        print('Monster No Location Page' + ', Jobs: ' + str(len(temp_list)))
     # specific locations
     print('Scraping...' + term)
     if use_custom_locations:
@@ -74,13 +74,13 @@ for term in search_terms:
                     temp_list = Indeed.get_job_posts(target_url, term)
                     jobs_found = jobs_found + len(temp_list)
                     master_job_list.append(temp_list)
-                    print('Indeed             pg ' + str(page + 1) + ', Jobs: ' + len(temp_list))
+                    print('Indeed             pg ' + str(page + 1) + ', Jobs: ' + str(len(temp_list)))
             if scrape_monster:
                 target_url = Monster.get_url(term, monster_pages, locale[0], locale[1])
                 temp_list = Monster.get_job_posts(target_url, term)
                 jobs_found = jobs_found + len(temp_list)
                 master_job_list.append(Monster.get_job_posts(temp_list))
-                print('Monster' + ', Jobs: ' + len(temp_list))
+                print('Monster' + ', Jobs: ' + str(len(temp_list)))
     else:  # using Census data for cities, sorted by population
         for city in range(0, num_cities):
             print('        ...' + search_locations_usa.loc[city, 'city'] + ' ' + search_locations_usa.loc[
@@ -113,7 +113,7 @@ if export_to_mongo:
     collection = db.job_descriptions
 
 runtime_in_seconds = round(time.time() - start_time, 1)
-print('Scrape complete.  Beginning to write data. Scraping time: ' + runtime_in_seconds + ' secs')
+print('Scrape complete.  Beginning to write data. Scraping time: ' + str(runtime_in_seconds) + ' secs')
 
 job_found_count = 0
 csv_file_count: int = 0
@@ -124,7 +124,7 @@ for x in master_job_list:
         runtime_in_minutes = runtime_in_seconds / 60
         job_found_count = job_found_count + len(x)
         pct_complete = round(job_found_count / jobs_found, 3)*100
-        print(pct_complete + '% Complete. ' + runtime_in_minutes + ' Minutes. Jobs Saved: ' + str(len(x)) + ', Net: ' + str(job_found_count))
+        print(str(pct_complete) + '% Complete. ' + str(runtime_in_minutes) + ' Minutes. Jobs Saved: ' + str(len(x)) + ', Net: ' + str(job_found_count))
         if export_to_csv:
             print('csv files generated: ' + str(csv_file_count))
             if job_found_count > next_file_save_count:
