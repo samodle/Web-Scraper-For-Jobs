@@ -6,24 +6,20 @@ import datetime
 from CensusData import CityData as city
 from pymongo import MongoClient
 import time
-# import re
-
-# import boto3
 
 start_time = time.time()
 
 # CUSTOMIZE YOUR SCRAPING BY EDITING THESE VARIABLES
-master_list_of_search_terms = ['unilever']
+master_list_of_search_terms2 = ['unilever']
 master_list_of_search_terms3 = ['customer support', 'customer experience', 'data center', 'help desk', 'technician',
                                 'retail', 'sales']
-master_list_of_search_terms2 = [
-    'unilever', 'customer support', 'customer experience', 'data center', 'help desk', 'technician',
+search_terms = [
+    'supervisor', 'manager', 'project', 'developer', 'customer support', 'customer experience', 'data center', 'help desk', 'technician',
     'slack', 'server', 'recruiter', 'computer', 'product', 'assistant', 'genius', 'retail', 'sales']
 
-search_terms = master_list_of_search_terms  #  [0:10]
 custom_search_locations = (('Washington', 'DC'), ('New York', 'NY'), ('Chicago', 'IL'), ('San Jose', 'CA'))
-pages = 3
-num_cities = 5
+pages = 5
+num_cities = 30
 jobs_per_csv = 10000
 next_file_save_count = jobs_per_csv
 
@@ -37,18 +33,19 @@ scrape_monster = True
 scrape_career_builder = False
 
 # only does one or the other (ie csv || db export)
-export_to_csv = True  # as opposed to printing data in the console
-# export_to_db = False # AWS
-export_to_mongo = False
+export_to_csv = False  # as opposed to printing data in the console
+export_to_mongo = True
 
 use_custom_locations = False  # option to enter your own search locations instead of picking n top locations
 
 monster_pages = 10  # min(10, pages)  # monster can't handle more than 10 pages
+
 # DB parameters
 # table_name_jobs = "JobPost"
 
 # variables
 master_job_list = []
+jobs_found = 0
 
 # specify the url
 for term in search_terms:
@@ -56,12 +53,16 @@ for term in search_terms:
     if scrape_indeed:
         for page in range(0, pages):
             target_url = Indeed.get_url(term, page)
-            master_job_list.append(Indeed.get_job_posts(target_url, term))
-            print('Indeed No Location pg ' + str(page + 1))
+            temp_list = Indeed.get_job_posts(target_url, term)
+            jobs_found = jobs_found + len(temp_list)
+            master_job_list.append(temp_list)
+            print('Indeed No Location pg ' + str(page + 1) + ', Jobs: ' + len(temp_list))
     if scrape_monster:
         target_url = Monster.get_url(term, monster_pages)
-        master_job_list.append(Monster.get_job_posts(target_url, term))
-        print('Monster No Location Page')
+        temp_list = Monster.get_job_posts(target_url, term)
+        jobs_found = jobs_found + temp_list.count
+        master_job_list.append(temp_list)
+        print('Monster No Location Page' + ', Jobs: ' + len(temp_list))
     # specific locations
     print('Scraping...' + term)
     if use_custom_locations:
@@ -70,12 +71,16 @@ for term in search_terms:
             if scrape_indeed:
                 for page in range(0, pages):
                     target_url = Indeed.get_url(term, page, locale[0], locale[1])
-                    master_job_list.append(Indeed.get_job_posts(target_url, term))
-                    print('Indeed             pg ' + str(page + 1))
+                    temp_list = Indeed.get_job_posts(target_url, term)
+                    jobs_found = jobs_found + len(temp_list)
+                    master_job_list.append(temp_list)
+                    print('Indeed             pg ' + str(page + 1) + ', Jobs: ' + len(temp_list))
             if scrape_monster:
                 target_url = Monster.get_url(term, monster_pages, locale[0], locale[1])
-                master_job_list.append(Monster.get_job_posts(target_url, term))
-                print('Monster Page')
+                temp_list = Monster.get_job_posts(target_url, term)
+                jobs_found = jobs_found + len(temp_list)
+                master_job_list.append(Monster.get_job_posts(temp_list))
+                print('Monster' + ', Jobs: ' + len(temp_list))
     else:  # using Census data for cities, sorted by population
         for city in range(0, num_cities):
             print('        ...' + search_locations_usa.loc[city, 'city'] + ' ' + search_locations_usa.loc[
@@ -91,15 +96,6 @@ for term in search_terms:
                                              search_locations_usa.loc[city, 'state_id'])
                 master_job_list.append(Monster.get_job_posts(target_url, term))
                 print('Monster Page')
-# else:
-#    if scrape_indeed:
-#        target_url = Indeed.get_url(search_terms[0], 1, search_locations_usa.loc[0, 'city'],
-#                                    search_locations_usa.loc[0, 'state_id'])
-#        master_job_list.append(Indeed.get_job_posts(target_url, search_terms[0]))
-#    if scrape_monster:
-#        target_url = Monster.get_url(search_terms[0], 1, search_locations_usa.loc[0, 'city'],
-#                                     search_locations_usa.loc[0, 'state_id'])
-#        master_job_list.append(Monster.get_job_posts(target_url, search_terms[0]))
 
 if export_to_csv:
     now = datetime.datetime.now()
@@ -110,30 +106,25 @@ if export_to_csv:
     fields = ['Name', 'Company', 'Location', 'Indeed Company Rating', 'Salary', 'Commitment', 'URL', 'Description',
               'Search Term', 'Date Scraped', 'Source']
     writer.writerow(fields)
-# elif export_to_db:
-# Creating the DynamoDB Client
-# dynamodb_client = boto3.client('dynamodb')
-# Creating the DynamoDB Table Resource
-# dynamodb = boto3.resource('dynamodb')
-# table = dynamodb.Table(table_name_jobs)
+
 if export_to_mongo:
     client = MongoClient('localhost', 27017, username='forkAdmin', password='ForkAdmin123')
     db = client.jobs
     collection = db.job_descriptions
 
-print('Scrape complete.  Beginning to write data.')
+runtime_in_seconds = round(time.time() - start_time, 1)
+print('Scrape complete.  Beginning to write data. Scraping time: ' + runtime_in_seconds + ' secs')
 
 job_found_count = 0
 csv_file_count: int = 0
-# pattern = re.compile('([^\s\w]|_)+')
-
-print("Scraping took", time.time() - start_time, "to run")
 
 for x in master_job_list:
     try:
-        print("Run Time: ", time.time() - start_time)
+        runtime_in_seconds = round(time.time() - start_time, 1)
+        runtime_in_minutes = runtime_in_seconds / 60
         job_found_count = job_found_count + len(x)
-        print('Jobs Found: ' + str(len(x)) + ', Net: ' + str(job_found_count))
+        pct_complete = round(job_found_count / jobs_found, 3)*100
+        print(pct_complete + '% Complete. ' + runtime_in_minutes + ' Minutes. Jobs Saved: ' + str(len(x)) + ', Net: ' + str(job_found_count))
         if export_to_csv:
             print('csv files generated: ' + str(csv_file_count))
             if job_found_count > next_file_save_count:
@@ -147,23 +138,20 @@ for x in master_job_list:
                     newline='')
                 writer = csv.writer(new_csv_file)
                 writer.writerow(fields)
-    except:
-        print(' oops  ')
+    except Exception as e:
+        print(str(e))
     for y in x:
         try:
             if y.source is ScrapeHelper.INDEED:
                 Indeed.complete_job_profile(y)
             elif y.source is ScrapeHelper.MONSTER:
                 Monster.complete_job_profile(y)
-            # y.description = pattern.sub('', y.description)
-            # y.description = y.description.replace('\n', ' ')
-            # y.description = y.description.strip('b')
-        except:
+        except Exception as e:
             print(ScrapeHelper.print_error_string(
                 'Error completing Job Profile. URL: ' + y.url))
         else:
             if export_to_csv:
-                try: # .encode('UTF-8', errors='ignore')
+                try:
                     new_row = [y.job_title, y.company, y.location, y.company_rating, y.salary, y.commitment_level,
                                y.url,
                                y.description, y.search_term,
@@ -173,8 +161,7 @@ for x in master_job_list:
                     print('Writing: ' + y.job_title)
                 except Exception as e:
                     print(ScrapeHelper.print_error_string(
-                        'csv error: ' + y.job_title + ' ' + y.search_term + ' ' + y.location))
-
+                        'csv error: ' + y.job_title + ' ' + y.search_term + ' ' + y.location + str(e)))
             if export_to_mongo:
                 new_jd = {
                     "JobTitle": y.job_title,
@@ -189,30 +176,10 @@ for x in master_job_list:
                     "source": y.source,
                     "description": y.description
                 }
-                collection.insert_one(new_jd)
-            # elif export_to_db:
-            #    try:
-            #        with table.batch_writer() as batch:
-            #            batch.put_item(
-            #                Item={
-            #                    "JobTitle": y.job_title,
-            #                    "CompanyID": 0,
-            #                    "company": y.company,
-            #                    "location": y.location,
-            #                    "rating": y.company_rating,
-            #                    "salary": y.salary,
-            #                    "commitment": y.commitment_level,
-            #                    "url": y.url,
-            #                    "search_term": y.search_term,
-            #                    "source": y.source,
-            #                    "description": y.description.encode('UTF-8', errors='ignore')
-            #                }
-            #            )
-            #    except Exception as e:
-            #        print(Indeed.print_error_string(
-            #            'database error: ' + y.job_title + ' ' + y.search_term + ' ' + y.location + '\n' + str(e)))
-            # else:
-            #    print(str(y))
+                try:
+                    collection.insert_one(new_jd)
+                except Exception as e:
+                    ScrapeHelper.print_error_string(str(e))
 
 print('Fork Data Export - 100% Complete')
 if export_to_csv:
