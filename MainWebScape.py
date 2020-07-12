@@ -5,9 +5,12 @@ import csv
 import datetime
 from CensusData import CityData as city
 from pymongo import MongoClient
-import time
+import logging  # Setting up the loggings to monitor execution time
+from time import time  # To time our operations
 
-start_time = time.time()
+# set up mechanism for timing how long the program takes to execute
+logging.basicConfig(format="%(levelname)s - %(asctime)s: %(message)s", datefmt='%H:%M:%S', level=logging.INFO)
+t = time()
 
 # CUSTOMIZE YOUR SCRAPING BY EDITING THESE VARIABLES
 master_list_of_search_terms2 = ['unilever']
@@ -38,17 +41,14 @@ export_to_mongo = True
 
 use_custom_locations = False  # option to enter your own search locations instead of picking n top locations
 
-monster_pages = 10  # min(10, pages)  # monster can't handle more than 10 pages
-
-# DB parameters
-# table_name_jobs = "JobPost"
+monster_pages = 10  # monster can't handle more than 10 'pages'
 
 # variables
 master_job_list = []
 jobs_found = 0
 
-# specify the url
-for term in search_terms:
+# STEP 1: IDENTIFY AND SCRAPE THE URLS TO PREPARE FOR STEP 2
+for term in search_terms:  # for each term specific above, go through the following steps
     # location agnostic
     if scrape_indeed:
         for page in range(0, pages):
@@ -60,7 +60,7 @@ for term in search_terms:
     if scrape_monster:
         target_url = Monster.get_url(term, monster_pages)
         temp_list = Monster.get_job_posts(target_url, term)
-        jobs_found = jobs_found + temp_list.count
+        jobs_found = jobs_found + len(temp_list)
         master_job_list.append(temp_list)
         print('Monster No Location Page' + ', Jobs: ' + str(len(temp_list)))
     # specific locations
@@ -79,7 +79,7 @@ for term in search_terms:
                 target_url = Monster.get_url(term, monster_pages, locale[0], locale[1])
                 temp_list = Monster.get_job_posts(target_url, term)
                 jobs_found = jobs_found + len(temp_list)
-                master_job_list.append(Monster.get_job_posts(temp_list))
+                master_job_list.append(temp_list)
                 print('Monster' + ', Jobs: ' + str(len(temp_list)))
     else:  # using Census data for cities, sorted by population
         for city in range(0, num_cities):
@@ -89,13 +89,15 @@ for term in search_terms:
                 for page in range(0, pages):
                     target_url = Indeed.get_url(term, page, search_locations_usa.loc[city, 'city'],
                                                 search_locations_usa.loc[city, 'state_id'])
-                    master_job_list.append(Indeed.get_job_posts(target_url, term))
-                    print('Indeed            pg ' + str(page + 1))
+                    temp_list = Indeed.get_job_posts(target_url, term)
+                    master_job_list.append(temp_list)
+                    print('Indeed            pg ' + str(page + 1) + ', Jobs: ' + str(len(temp_list)))
             if scrape_monster:
                 target_url = Monster.get_url(term, monster_pages, search_locations_usa.loc[city, 'city'],
                                              search_locations_usa.loc[city, 'state_id'])
-                master_job_list.append(Monster.get_job_posts(target_url, term))
-                print('Monster Page')
+                temp_list = Monster.get_job_posts(target_url, term)
+                master_job_list.append(temp_list)
+                print('Monster Page' + ', Jobs: ' + str(len(temp_list)))
 
 if export_to_csv:
     now = datetime.datetime.now()
@@ -112,19 +114,19 @@ if export_to_mongo:
     db = client.jobs
     collection = db.job_descriptions
 
-runtime_in_seconds = round(time.time() - start_time, 1)
-print('Scrape complete.  Beginning to write data. Scraping time: ' + str(runtime_in_seconds) + ' secs')
+print('Scrape complete. Jobs Found: ' + str(jobs_found))
+print('Time to scrape: {} min'.format(round((time() - t) / 60, 2)))
 
 job_found_count = 0
 csv_file_count: int = 0
 
+# STEP 2: SCRAPE COMPLETE JOB DESCRIPTIONS, EXPORT THE SCRAPED JOB DESCRIPTIONS
 for x in master_job_list:
     try:
-        runtime_in_seconds = round(time.time() - start_time, 1)
-        runtime_in_minutes = runtime_in_seconds / 60
         job_found_count = job_found_count + len(x)
         pct_complete = round(job_found_count / jobs_found, 3)*100
-        print(str(pct_complete) + '% Complete. ' + str(runtime_in_minutes) + ' Minutes. Jobs Saved: ' + str(len(x)) + ', Net: ' + str(job_found_count))
+        print(str(pct_complete) + '% Complete. ' + ' Jobs Saved: ' + str(len(x)) + ', Net: ' + str(job_found_count) + ' / ' + str(jobs_found))
+        print('Execution Time: {} min'.format(round((time() - t) / 60, 2)))
         if export_to_csv:
             print('csv files generated: ' + str(csv_file_count))
             if job_found_count > next_file_save_count:
@@ -148,7 +150,7 @@ for x in master_job_list:
                 Monster.complete_job_profile(y)
         except Exception as e:
             print(ScrapeHelper.print_error_string(
-                'Error completing Job Profile. URL: ' + y.url))
+                'Error completing Job Profile. URL: ' + y.url + ' // ' + str(e)))
         else:
             if export_to_csv:
                 try:
@@ -181,6 +183,7 @@ for x in master_job_list:
                 except Exception as e:
                     ScrapeHelper.print_error_string(str(e))
 
-print('Fork Data Export - 100% Complete')
 if export_to_csv:
     new_csv_file.close()
+
+print('Fork Data Export - 100% Complete.  Execution Time: {} min'.format(round((time() - t) / 60, 2)))
