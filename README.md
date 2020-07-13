@@ -34,7 +34,7 @@ Fork Web Scraper requires a ForkConfig.py file with the following parameters:
   # Database Params
   MONGO_USERNAME = ''
   MONGO_PASSWORD = ''
-  MONGO_PORT = ''
+  MONGO_PORT = 
   MONGO_HOST = ''
   MONGO_JOB_DB = ''
   MONGO_JOB_COLLECTION = ''

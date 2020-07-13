@@ -122,7 +122,7 @@ if Fork.export_to_csv:
 
 # if saving the database, open db connection
 if Fork.export_to_mongo:
-    client = MongoClient(Fork.MONGO_HOST, Fork.MONGO_PORT, Fork.MONGO_USERNAME, Fork.MONGO_PASSWORD)
+    client = MongoClient(Fork.MONGO_HOST, Fork.MONGO_PORT, username=Fork.MONGO_USERNAME, password=Fork.MONGO_PASSWORD)
     db = client.jobs
     collection = db.job_descriptions
 
