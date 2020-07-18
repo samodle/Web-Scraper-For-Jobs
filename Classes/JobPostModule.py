@@ -11,9 +11,9 @@ class JobPost:
         self.search_term = search_term
         self.source = source
         # initialize other fields
-        self.company_rating = None
-        self.salary = None
-        self.commitment_level = None
+        self.company_rating = '' #  None
+        self.salary = ''  # None
+        self.commitment_level = ''  # None
         self.description = None
 
     def __str__(self):

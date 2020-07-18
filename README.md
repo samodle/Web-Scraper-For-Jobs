@@ -1,5 +1,7 @@
 # forkwebscraper
 
+# NOTE PLEASE CONTACT @samodle FOR LATEST READ.ME
+
 Fork Web Scraper requires a ForkConfig.py file with the following parameters:
 
 ```python

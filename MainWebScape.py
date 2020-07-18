@@ -8,6 +8,7 @@ from pymongo import MongoClient
 import logging  # Setting up the loggings to monitor execution time
 from time import time  # To time our operations
 import ForkConfig as Fork
+import database as ForkDB
 
 # set up mechanism for timing how long the program takes to execute
 logging.basicConfig(format="%(levelname)s - %(asctime)s: %(message)s", datefmt='%H:%M:%S', level=logging.INFO)
@@ -15,13 +16,18 @@ t = time()
 
 # initialize in process variables
 next_file_save_count = Fork.jobs_per_csv
-search_locations_usa = city.import_city_data()
 master_job_list = []
 jobs_found = 0
 monster_pages = 10  # monster can't handle more than 10 'pages'
 
+if Fork.use_professions_as_search_terms:
+    df = ForkDB.get_all_professions()
+    search_terms = df['Name']
+else:
+    search_terms = Fork.search_terms
+
 # STEP 1: IDENTIFY AND SCRAPE THE URLS TO PREPARE FOR STEP 2
-for term in Fork.search_terms:  # for each term specific above, go through the following steps
+for term in search_terms:  # for each term specific above, go through the following steps
 
     # always start with a generic, location agnostic search
     if Fork.scrape_indeed:
@@ -79,6 +85,8 @@ for term in Fork.search_terms:  # for each term specific above, go through the f
                 print('Monster' + ', Jobs: ' + str(len(temp_list)))
 
     else:  # using Census data for cities, sorted by population
+
+        search_locations_usa = city.import_city_data()
 
         for city in range(0, Fork.num_cities):
             print('        ...' + search_locations_usa.loc[city, 'city'] + ' ' + search_locations_usa.loc[
