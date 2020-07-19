@@ -6,13 +6,12 @@ import csv
 import datetime
 from CensusData import CityData
 from pymongo import MongoClient
-import logging  # Setting up the loggings to monitor execution time
 from time import time  # To time our operations
 import ForkConfig as Fork
 import database as ForkDB
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 # set up mechanism for timing how long the program takes to execute
-logging.basicConfig(format="%(levelname)s - %(asctime)s: %(message)s", datefmt='%H:%M:%S', level=logging.INFO)
 t = time()
 
 # initialize in process variables

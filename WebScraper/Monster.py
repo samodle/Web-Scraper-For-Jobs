@@ -4,6 +4,11 @@ from Classes.JobPostModule import JobPost
 from WebScraper import ScrapeHelper
 
 
+def get_job_list(search_term, search_page_number=0, search_city='', search_state=''):
+    url = get_url(search_term, search_page_number, search_city, search_state)
+    return get_job_posts(url, search_term)
+
+
 def get_url(search_term, search_page_number=0, search_city='', search_state=''):
     """Returns URL that queries Monster for the given search term at the given location.
     search_page_number counts from 0! """

@@ -4,6 +4,15 @@ from bs4 import BeautifulSoup
 from Classes.JobPostModule import JobPost
 
 
+def get_job_list(search_term, search_pages, search_city='', search_state=''):
+    job_list = []
+
+    for search_page_number in range(0, search_pages):
+        url = get_url(search_term, search_page_number, search_city, search_state)
+        job_list.append(get_job_posts(url, search_term))
+
+    return job_list
+
 def get_url(search_term, search_page_number=0, search_city='', search_state=''):
     """Returns URL that queries Indeed for the given search term at the given location.
     search_page_number counts from 0! """
