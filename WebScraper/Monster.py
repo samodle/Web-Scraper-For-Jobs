@@ -53,41 +53,42 @@ def get_job_posts(target_url, search_term):
             job_cards = job_cards_master.find_all(
                 lambda tag: tag.name == 'section' and tag.get('class') == ['card-content'])
             for card in job_cards:
-                # print(card.prettify())
-                company_div = card.find('div', class_='company')
-                x1 = company_div.find('span', class_='name')
-                if not x1 is None:
-                    company = x1.text.strip('\n')
-                else:
-                    company = unknown_string
+                try:
+                    company_div = card.find('div', class_='company')
+                    x1 = company_div.find('span', class_='name')
+                    if not x1 is None:
+                        company = x1.text.strip('\n')
+                    else:
+                        company = unknown_string
 
-                loc_div = card.find('div', class_='location')
-                x2 = loc_div.find('span', class_='name')
-                if not x2 is None:
-                    location = x2.text.strip('\n')
-                    location = location.replace('\r', '')
-                    location = location.replace('\n', '')
-                else:
-                    location = unknown_string
+                    loc_div = card.find('div', class_='location')
+                    x2 = loc_div.find('span', class_='name')
+                    if not x2 is None:
+                        location = x2.text.strip('\n')
+                        location = location.replace('\r', '')
+                        location = location.replace('\n', '')
+                    else:
+                        location = unknown_string
 
-                sum_div = card.find('div', class_='summary')
-                x3 = sum_div.find('header', class_='card-header')
-                x0 = x3.find('a')
-                links = x0.get('href')
-                names = x0.get_text().strip('\n')
-                names = names.replace('\r', '')
+                    sum_div = card.find('div', class_='summary')
+                    x3 = sum_div.find('header', class_='card-header')
+                    x0 = x3.find('a')
+                    links = x0.get('href')
+                    names = x0.get_text().strip('\n')
+                    names = names.replace('\r', '')
 
-                # print(names + ' -- ' + location + ' -- ' + company + ' -- ' + links)
-                url_list.append(
-                    JobPost(job_title=names, url=links, company=company, location=location, search_term=search_term,
-                            source=ScrapeHelper.MONSTER))
+                    # print(names + ' -- ' + location + ' -- ' + company + ' -- ' + links)
+                    url_list.append(
+                        JobPost(job_title=names, url=links, company=company, location=location, search_term=search_term,
+                                source=ScrapeHelper.MONSTER))
+                except Exception as e:
+                    ScrapeHelper.print_error_string(str(e) + " Monster Job Unavailable/Not Found")
         except Exception as e:
-            ScrapeHelper.print_error_string(str(e) + "Job Cards Not Found")
+            ScrapeHelper.print_error_string(str(e) + " Monster Job Cards Not Found")
 
     return url_list
 
 
-# noinspection DuplicatedCode
 def complete_job_profile(job_post: JobPost):
     page = requests.get(job_post.url)
 

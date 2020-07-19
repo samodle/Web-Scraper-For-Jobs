@@ -1,9 +1,10 @@
 from WebScraper import Indeed
 from WebScraper import Monster
 from WebScraper import ScrapeHelper
+from WebScraper import CareerBuilder
 import csv
 import datetime
-from CensusData import CityData as city
+from CensusData import CityData
 from pymongo import MongoClient
 import logging  # Setting up the loggings to monitor execution time
 from time import time  # To time our operations
@@ -19,6 +20,7 @@ next_file_save_count = Fork.jobs_per_csv
 master_job_list = []
 jobs_found = 0
 monster_pages = 10  # monster can't handle more than 10 'pages'
+careerbuilder_pages = 2
 
 if Fork.use_professions_as_search_terms:
     df = ForkDB.get_all_professions()
@@ -28,6 +30,7 @@ else:
 
 # STEP 1: IDENTIFY AND SCRAPE THE URLS TO PREPARE FOR STEP 2
 for term in search_terms:  # for each term specific above, go through the following steps
+    print('Scraping...' + term)
 
     # always start with a generic, location agnostic search
     if Fork.scrape_indeed:
@@ -42,6 +45,7 @@ for term in search_terms:  # for each term specific above, go through the follow
             # add the JDs to our list
             master_job_list.append(temp_list)
             print('Indeed No Location pg ' + str(page + 1) + ', Jobs: ' + str(len(temp_list)))
+
     if Fork.scrape_monster:
         # determine the URL for the desired query
         target_url = Monster.get_url(term, monster_pages)
@@ -53,8 +57,20 @@ for term in search_terms:  # for each term specific above, go through the follow
         # add the JDs to our list of lists
         master_job_list.append(temp_list)
         print('Monster No Location Page' + ', Jobs: ' + str(len(temp_list)))
+
+    if Fork.scrape_career_builder:
+        # determine the URL for the desired query
+        target_url = CareerBuilder.get_url(term, careerbuilder_pages)
+
+        # scrape the JDs from that query
+        temp_list = CareerBuilder.get_job_posts(target_url, term)
+        jobs_found = jobs_found + len(temp_list)
+
+        # add the JDs to our list of lists
+        master_job_list.append(temp_list)
+        print('CareerBuilder No Location Page' + ', Jobs: ' + str(len(temp_list)))
+
     # specific locations
-    print('Scraping...' + term)
     if Fork.use_custom_locations:
         for locale in Fork.custom_search_locations:
             print('        ...' + locale[0] + ' ' + locale[1])
@@ -82,11 +98,23 @@ for term in search_terms:  # for each term specific above, go through the follow
 
                 # add the JDs to our list of lists
                 master_job_list.append(temp_list)
-                print('Monster' + ', Jobs: ' + str(len(temp_list)))
+                print('Monster Jobs: ' + str(len(temp_list)))
 
-    else:  # using Census data for cities, sorted by population
+            if Fork.scrape_career_builder:
+                # determine the URL for the desired query
+                target_url = CareerBuilder.get_url(term, careerbuilder_pages, locale[0], locale[1])
 
-        search_locations_usa = city.import_city_data()
+                # scrape the JDs from that query
+                temp_list = CareerBuilder.get_job_posts(target_url, term)
+                jobs_found = jobs_found + len(temp_list)
+
+                # add the JDs to our list of lists
+                master_job_list.append(temp_list)
+                print('CareerBuilder Jobs: ' + str(len(temp_list)))
+
+    if Fork.scrape_census_locations:  # using Census data for cities, sorted by population
+
+        search_locations_usa = CityData.import_city_data()
 
         for city in range(0, Fork.num_cities):
             print('        ...' + search_locations_usa.loc[city, 'city'] + ' ' + search_locations_usa.loc[
@@ -115,7 +143,20 @@ for term in search_terms:  # for each term specific above, go through the follow
 
                 # add the JDs to our list of lists
                 master_job_list.append(temp_list)
-                print('Monster Page' + ', Jobs: ' + str(len(temp_list)))
+                print('Monster Page Jobs: ' + str(len(temp_list)))
+
+            if Fork.scrape_career_builder:
+                # determine the URL for the desired query
+                target_url = CareerBuilder.get_url(term, careerbuilder_pages, search_locations_usa.loc[city, 'city'],
+                                                   search_locations_usa.loc[city, 'state_id'])
+
+                # scrape the JDs from that query
+                temp_list = CareerBuilder.get_job_posts(target_url, term)
+                jobs_found = jobs_found + len(temp_list)
+
+                # add the JDs to our list of lists
+                master_job_list.append(temp_list)
+                print('CareerBuilder Jobs: ' + str(len(temp_list)))
 
 # if saving the data as a .csv, initialize the .csv writing
 if Fork.export_to_csv:
@@ -146,8 +187,9 @@ for x in master_job_list:
     try:
         # status update
         job_found_count = job_found_count + len(x)
-        pct_complete = round(job_found_count / jobs_found, 3)*100
-        print(str(pct_complete) + '% Complete. ' + ' Jobs Saved: ' + str(len(x)) + ', Net: ' + str(job_found_count) + ' / ' + str(jobs_found))
+        pct_complete = round(job_found_count / jobs_found, 3) * 100
+        print(str(pct_complete) + '% Complete. ' + ' Jobs Saved: ' + str(len(x)) + ', Net: ' + str(
+            job_found_count) + ' / ' + str(jobs_found))
         print('Execution Time: {} min'.format(round((time() - t) / 60, 2)))
 
         if Fork.export_to_csv:
@@ -178,6 +220,8 @@ for x in master_job_list:
                 Indeed.complete_job_profile(y)
             elif y.source is ScrapeHelper.MONSTER:
                 Monster.complete_job_profile(y)
+            elif y.source is ScrapeHelper.CAREERBUILDER:
+                CareerBuilder.complete_job_profile(y)
         except Exception as e:
             print(ScrapeHelper.print_error_string(
                 'Error completing Job Profile. URL: ' + y.url + ' // ' + str(e)))

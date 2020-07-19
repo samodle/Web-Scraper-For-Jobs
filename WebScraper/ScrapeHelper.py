@@ -1,5 +1,6 @@
 INDEED = "Indeed"
 MONSTER = "Monster"
+CAREERBUILDER = "CareerBuilder"
 
 def print_error_string(message):
     """prints clearly separated error message in console"""
