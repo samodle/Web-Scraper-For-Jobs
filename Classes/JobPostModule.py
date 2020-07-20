@@ -15,7 +15,7 @@ class JobPost:
         self.company_rating = ''  # None
         self.salary = salary  # None
         self.commitment_level = commitment_level  # None
-        self.description = None
+        self.description = ''
         self.post_date = post_date
 
     def __str__(self):

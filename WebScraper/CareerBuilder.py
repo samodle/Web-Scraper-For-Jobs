@@ -97,8 +97,11 @@ def get_job_posts(target_url, search_term):
                     else:
                         location = unknown_string
 
-                    if not spans[2] is None:
-                        commitment = spans[2].text.strip('\n')
+                    if len(spans) > 2:
+                        if not spans[2] is None:
+                            commitment = spans[2].text.strip('\n')
+                        else:
+                            commitment = unknown_string
                     else:
                         commitment = unknown_string
 
@@ -114,6 +117,29 @@ def get_job_posts(target_url, search_term):
             ScrapeHelper.print_error_string(str(e) + " Career Builder Job Cards Not Found")
 
     return url_list
+
+
+def get_document(y: JobPost):
+    try:
+        complete_job_profile(y)
+        new_jd = {
+            "JobTitle": y.job_title,
+            "CompanyID": 0,
+            "company": y.company,
+            "location": y.location,
+            "rating": y.company_rating,
+            "salary": y.salary,
+            "commitment": y.commitment_level,
+            "url": y.url,
+            "search_term": y.search_term,
+            "source": y.source,
+            "description": y.description,
+            "post_date": y.post_date
+        }
+        return new_jd
+    except Exception as e:
+        ScrapeHelper.print_error_string('Complete Job Post Error ' + y.source + ' ' + y.url + ' : ' + str(e))
+        return None
 
 
 def complete_job_profile(job_post: JobPost):
