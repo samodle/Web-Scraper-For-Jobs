@@ -2,12 +2,13 @@ import requests
 from WebScraper import ScrapeHelper
 from bs4 import BeautifulSoup
 from Classes.JobPostModule import JobPost
+import ForkConfig as Fork
 
 
-def get_job_list(search_term, search_pages, search_city='', search_state=''):
+def get_job_list(search_term, search_city='', search_state=''):
     job_list = []
 
-    for search_page_number in range(0, search_pages):
+    for search_page_number in range(0, Fork.pages):
         url = get_url(search_term, search_page_number, search_city, search_state)
         job_list.append(get_job_posts(url, search_term))
 
