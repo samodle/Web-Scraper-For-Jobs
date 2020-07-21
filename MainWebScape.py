@@ -33,37 +33,39 @@ if __name__ == '__main__':
 
     # first, perform location agnostic search
     if Fork.scrape_indeed:
-        with ProcessPoolExecutor(max_workers=cores - 1) as executor:
-            futures = [executor.submit(Indeed.get_job_list, term) for term in search_terms]
-            for result in as_completed(futures):
-                master_job_list.append(result.result())
-        print('Time to gather Indeed URLs: {} min'.format(round((time() - t) / 60, 2)))
+        for i in range(0, Fork.pages):
+            with ProcessPoolExecutor(max_workers=cores - 1) as executor:
+                futures = [executor.submit(Indeed.get_job_list, term, i) for term in search_terms]
+                for result in as_completed(futures):
+                    master_job_list.append(result.result())
+            print('Indeed URLs Scraped pg ' + str(i) + ': {} min'.format(round((time() - t) / 60, 2)))
 
     if Fork.scrape_monster:
         with ProcessPoolExecutor(max_workers=cores - 1) as executor:
             futures = [executor.submit(Monster.get_job_list, term) for term in search_terms]
             for result in as_completed(futures):
                 master_job_list.append(result.result())
-        print('Time to gather Monster URLs: {} min'.format(round((time() - t) / 60, 2)))
+        print('Monster URLs Scraped: {} min'.format(round((time() - t) / 60, 2)))
 
     if Fork.scrape_career_builder:
         with ProcessPoolExecutor(max_workers=cores - 1) as executor:
             futures = [executor.submit(CareerBuilder.get_job_list, term) for term in search_terms]
             for result in as_completed(futures):
                 master_job_list.append(result.result())
-        print('Time to gather CareerBuilder URLs: {} min'.format(round((time() - t) / 60, 2)))
+        print('CareerBuilder URLs Scraped: {} min'.format(round((time() - t) / 60, 2)))
 
     # specific locations
     if Fork.use_custom_locations:
         for locale in Fork.custom_search_locations:
             print('        ...' + locale[0] + ' ' + locale[1])
             if Fork.scrape_indeed:
-                with ProcessPoolExecutor(max_workers=cores - 1) as executor:
-                    futures = [executor.submit(Indeed.get_job_list, term, locale[0], locale[1]) for term in
-                               search_terms]
-                    for result in as_completed(futures):
-                        master_job_list.append(result.result())
-                print('           ' + 'Time to gather Indeed URLs: {} min'.format(round((time() - t) / 60, 2)))
+                for i in range(0, Fork.pages):
+                    with ProcessPoolExecutor(max_workers=cores - 1) as executor:
+                        futures = [executor.submit(Indeed.get_job_list, term, i, locale[0], locale[1]) for term in
+                                   search_terms]
+                        for result in as_completed(futures):
+                            master_job_list.append(result.result())
+                    print('           ' + 'Indeed URLs pg ' + str(i) + ': {} min'.format(round((time() - t) / 60, 2)))
 
             if Fork.scrape_monster:
                 with ProcessPoolExecutor(max_workers=cores - 1) as executor:
@@ -71,7 +73,7 @@ if __name__ == '__main__':
                                search_terms]
                     for result in as_completed(futures):
                         master_job_list.append(result.result())
-                print('           ' + 'Time to gather Monster URLs: {} min'.format(round((time() - t) / 60, 2)))
+                print('           ' + 'Monster URLs: {} min'.format(round((time() - t) / 60, 2)))
 
             if Fork.scrape_career_builder:
                 with ProcessPoolExecutor(max_workers=cores - 1) as executor:
@@ -79,7 +81,7 @@ if __name__ == '__main__':
                                search_terms]
                     for result in as_completed(futures):
                         master_job_list.append(result.result())
-                print('           ' + 'Time to gather CareerBuilder URLs: {} min'.format(round((time() - t) / 60, 2)))
+                print('           ' + 'CareerBuilder URLs: {} min'.format(round((time() - t) / 60, 2)))
 
     if Fork.scrape_census_locations:  # using Census data for cities, sorted by population
 
@@ -90,12 +92,13 @@ if __name__ == '__main__':
                 city, 'state_id'] + ', ' + str(city) + '/' + str(Fork.num_cities))
 
             if Fork.scrape_indeed:
-                with ProcessPoolExecutor(max_workers=cores - 1) as executor:
-                    futures = [executor.submit(Indeed.get_job_list, term, locations.loc[city, 'city'],
-                                               locations.loc[city, 'state_id']) for term in search_terms]
-                    for result in as_completed(futures):
-                        master_job_list.append(result.result())
-                print('           ' + 'Time to gather Indeed URLs: {} min'.format(round((time() - t) / 60, 2)))
+                for i in range(0, Fork.pages):
+                    with ProcessPoolExecutor(max_workers=cores - 1) as executor:
+                        futures = [executor.submit(Indeed.get_job_list, term, i, locations.loc[city, 'city'],
+                                                   locations.loc[city, 'state_id']) for term in search_terms]
+                        for result in as_completed(futures):
+                            master_job_list.append(result.result())
+                    print('           ' + 'Indeed URLs pg ' + str(i) + ': {} min'.format(round((time() - t) / 60, 2)))
 
             if Fork.scrape_monster:
                 with ProcessPoolExecutor(max_workers=cores - 1) as executor:
@@ -103,7 +106,7 @@ if __name__ == '__main__':
                                                locations.loc[city, 'state_id']) for term in search_terms]
                     for result in as_completed(futures):
                         master_job_list.append(result.result())
-                print('           ' + 'Time to gather Monster URLs: {} min'.format(round((time() - t) / 60, 2)))
+                print('           ' + 'Monster URLs: {} min'.format(round((time() - t) / 60, 2)))
 
             if Fork.scrape_career_builder:
                 with ProcessPoolExecutor(max_workers=cores - 1) as executor:
@@ -111,7 +114,7 @@ if __name__ == '__main__':
                                                locations.loc[city, 'state_id']) for term in search_terms]
                     for result in as_completed(futures):
                         master_job_list.append(result.result())
-                print('           ' + 'Time to gather CareerBuilder URLs: {} min'.format(round((time() - t) / 60, 2)))
+                print('           ' + 'CareerBuilder URLs: {} min'.format(round((time() - t) / 60, 2)))
 
     # how many total jobs did we find?
     for listx in master_job_list:
@@ -136,34 +139,30 @@ if __name__ == '__main__':
             unsaved_job_count += 1
             print('Unsaved Job: #' + str(unsaved_job_count))
         elif len(x) > 0:
-            x0 = x[0]
-            # accomodating embedded lists from multi-paged single site scrapes
-            if isinstance(x0, JobPost):
-                x0 = x
 
             # status update
-            job_found_count += len(x0)
-            pct_complete = round(job_found_count * 100 / jobs_found, 1)
-            print(str(pct_complete) + '% Complete. Jobs Saved: ' + str(len(x0)) + ', Net: ' + str(job_found_count) + '/' + str(jobs_found) + ', Time: {} min'.format(round((time() - t) / 60, 2)))
+            job_found_count += len(x)
+            pct_complete = round(job_found_count * 100 / jobs_found, 2)
+            print(str(pct_complete) + '% Complete. Jobs: ' + str(len(x)) + ', Net: ' + str(job_found_count) + '/' + str(jobs_found) + ', Time: {} min'.format(round((time() - t) / 60, 2)))
 
             doc_collection = []
 
-            temp = x0[0]
+            temp = x[0]
 
             # iterate through each list of JDs
             if temp.source == ScrapeHelper.INDEED:
                 with ProcessPoolExecutor(max_workers=cores - 1) as executor:
-                    futures = [executor.submit(Indeed.get_document, y) for y in x0]
+                    futures = [executor.submit(Indeed.get_document, y) for y in x]
                     for result in as_completed(futures):
                         doc_collection.append(result.result())
             elif temp.source == ScrapeHelper.MONSTER:
                 with ProcessPoolExecutor(max_workers=cores - 1) as executor:
-                    futures = [executor.submit(Monster.get_document, y) for y in x0]
+                    futures = [executor.submit(Monster.get_document, y) for y in x]
                     for result in as_completed(futures):
                         doc_collection.append(result.result())
             elif temp.source == ScrapeHelper.CAREERBUILDER:
                 with ProcessPoolExecutor(max_workers=cores - 1) as executor:
-                    futures = [executor.submit(CareerBuilder.get_document, y) for y in x0]
+                    futures = [executor.submit(CareerBuilder.get_document, y) for y in x]
                     for result in as_completed(futures):
                         doc_collection.append(result.result())
 
