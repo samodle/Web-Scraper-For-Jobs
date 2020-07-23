@@ -3,7 +3,7 @@ import datetime
 
 class JobPost:
     def __init__(self, job_title, url=None, company=None, location=None, search_term=None, source=None, salary='',
-                 commitment_level='', post_date= ''):
+                 commitment_level='', post_date=''):
         self.job_title = job_title
         self.url = url
         self.company = company

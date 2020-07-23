@@ -25,7 +25,15 @@ if __name__ == '__main__':
 
     if Fork.use_professions_as_search_terms:
         df = ForkDB.get_all_professions()
-        search_terms = df['Name']
+        if Fork.use_only_target_occupations:
+            df = df.loc[df['Name'].isin(Fork.target_occupations)]
+        if Fork.query_alternate_titles:
+            df = df[['AlternateNames']]
+            search_terms = []
+            for item in df['AlternateNames'].values:
+                search_terms.extend(item)
+        else:
+            search_terms = df['Name']
     else:
         search_terms = Fork.search_terms
 
