@@ -1,5 +1,4 @@
 import multiprocessing
-
 from Classes.JobPostModule import JobPost
 from WebScraper import Indeed
 from WebScraper import Monster

@@ -88,9 +88,9 @@ def get_job_posts(target_url, search_term):
                         JobPost(job_title=names, url=links, company=company, location=location, search_term=search_term,
                                 source=ScrapeHelper.MONSTER))
                 except Exception as e:
-                    ScrapeHelper.print_error_string(str(e) + " Monster Job Unavailable/Not Found")
+                    ScrapeHelper.print_error_string(str(e) + " Monster Job Unavailable/Not Found: " + search_term)
         except Exception as e:
-            ScrapeHelper.print_error_string(str(e) + " Monster Job Cards Not Found")
+            ScrapeHelper.print_error_string(str(e) + " Monster Job Cards Not Found: " + search_term)
 
     return url_list
 

@@ -39,82 +39,86 @@ def get_job_posts(target_url, search_term):
 
     # variables
     url_list = []
-    page = requests.get(target_url)
 
-    # Create a BeautifulSoup object
-    big_soup = BeautifulSoup(page.text, 'html.parser')
+    try:
+        page = requests.get(target_url)
 
-    # Let's clean this mess up
-    for script in big_soup(["script", "style"]):  # remove all javascript and stylesheet code
-        script.decompose()
+        # Create a BeautifulSoup object
+        big_soup = BeautifulSoup(page.text, 'html.parser')
 
-    parent_search_section = big_soup.find_all('div', class_='data-results-content-parent relative')
+        # Let's clean this mess up
+        for script in big_soup(["script", "style"]):  # remove all javascript and stylesheet code
+            script.decompose()
 
-    if parent_search_section is None:
-        ScrapeHelper.print_error_string(big_soup.prettify())
-    else:
-        try:
-            for card in parent_search_section:
-                try:
-                    # print(card.prettify())
+        parent_search_section = big_soup.find_all('div', class_='data-results-content-parent relative')
 
-                    main_div = card.find_all('a')
-                    # main_div2 = card.find_all('a', _class='data-results-content block job-listing-item')
-                    links = 'https://www.careerbuilder.com' + main_div[1].get('href')
+        if parent_search_section is None:
+            ScrapeHelper.print_error_string(big_soup.prettify())
+        else:
+            try:
+                for card in parent_search_section:
+                    try:
+                        # print(card.prettify())
 
-                    name_div = card.find('div', {"class": "data-results-title"})
-                    names = name_div.get_text().strip('\n')
-                    names = names.replace('\r', '')
+                        main_div = card.find_all('a')
+                        # main_div2 = card.find_all('a', _class='data-results-content block job-listing-item')
+                        links = 'https://www.careerbuilder.com' + main_div[1].get('href')
 
-                    pub_time = card.find('div', {"class": "data-results-publish-time"})
+                        name_div = card.find('div', {"class": "data-results-title"})
+                        names = name_div.get_text().strip('\n')
+                        names = names.replace('\r', '')
 
-                    if not pub_time is None:
-                        publish_time = pub_time.get_text().strip('\n')
-                    else:
-                        publish_time = unknown_string
+                        pub_time = card.find('div', {"class": "data-results-publish-time"})
 
-                    # salary_div = card.find('div', {"class": "data-snapshot"})
+                        if not pub_time is None:
+                            publish_time = pub_time.get_text().strip('\n')
+                        else:
+                            publish_time = unknown_string
 
-                    salary_divA = card.find(
-                        lambda tag: tag.name == 'div' and tag.get('class') == ['data-snapshot'])
+                        # salary_div = card.find('div', {"class": "data-snapshot"})
 
-                    salary_div = salary_divA.find(
-                        lambda tag: tag.name == 'div' and tag.get('class') == ['block'])
+                        salary_divA = card.find(
+                            lambda tag: tag.name == 'div' and tag.get('class') == ['data-snapshot'])
 
-                    if not salary_div is None:
-                        salary = salary_div.text.strip('\n')
+                        salary_div = salary_divA.find(
+                            lambda tag: tag.name == 'div' and tag.get('class') == ['block'])
 
-                    company_div = card.find('div', {"class": "data-details"})
-                    spans = company_div.find_all('span')
+                        if not salary_div is None:
+                            salary = salary_div.text.strip('\n')
 
-                    if not spans[0] is None:
-                        company = spans[0].text.strip('\n')
-                    else:
-                        company = unknown_string
+                        company_div = card.find('div', {"class": "data-details"})
+                        spans = company_div.find_all('span')
 
-                    if not spans[1] is None:
-                        location = spans[1].text.strip('\n')
-                    else:
-                        location = unknown_string
+                        if not spans[0] is None:
+                            company = spans[0].text.strip('\n')
+                        else:
+                            company = unknown_string
 
-                    if len(spans) > 2:
-                        if not spans[2] is None:
-                            commitment = spans[2].text.strip('\n')
+                        if not spans[1] is None:
+                            location = spans[1].text.strip('\n')
+                        else:
+                            location = unknown_string
+
+                        if len(spans) > 2:
+                            if not spans[2] is None:
+                                commitment = spans[2].text.strip('\n')
+                            else:
+                                commitment = unknown_string
                         else:
                             commitment = unknown_string
-                    else:
-                        commitment = unknown_string
 
-                    # print(names + ' -- ' + location + ' -- ' + company + ' -- ' + links + ' -- ' + salary + ' -- '
-                    # + commitment + ' -- ' + publish_time)
-                    url_list.append(
-                        JobPost(job_title=names, url=links, company=company, location=location, search_term=search_term,
-                                source=ScrapeHelper.CAREERBUILDER, salary=salary, commitment_level=commitment,
-                                post_date=publish_time))
-                except Exception as e:
-                    ScrapeHelper.print_error_string(str(e) + " Career Builder Job Unavailable/Not Found")
-        except Exception as e:
-            ScrapeHelper.print_error_string(str(e) + " Career Builder Job Cards Not Found")
+                        # print(names + ' -- ' + location + ' -- ' + company + ' -- ' + links + ' -- ' + salary + ' -- '
+                        # + commitment + ' -- ' + publish_time)
+                        url_list.append(
+                            JobPost(job_title=names, url=links, company=company, location=location, search_term=search_term,
+                                    source=ScrapeHelper.CAREERBUILDER, salary=salary, commitment_level=commitment,
+                                    post_date=publish_time))
+                    except Exception as e:
+                        ScrapeHelper.print_error_string(str(e) + " Career Builder Job Unavailable/Not Found: " + search_term)
+            except Exception as e:
+                ScrapeHelper.print_error_string(str(e) + " Career Builder Job Cards Not Found: " + search_term)
+    except Exception as e:
+        ScrapeHelper.print_error_string(str(e) + " Career Builder Requests Failed: " + search_term)
 
     return url_list
 
