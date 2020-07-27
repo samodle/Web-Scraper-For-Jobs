@@ -8,7 +8,7 @@ class JobPost:
         self.url = url
         self.company = company
         self.location = location
-        self.last_update = datetime.datetime.now()
+        self.date_found = datetime.datetime.now()
         self.search_term = search_term
         self.source = source
         # initialize other fields

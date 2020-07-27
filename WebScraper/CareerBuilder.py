@@ -138,6 +138,7 @@ def get_document(y: JobPost):
             "search_term": y.search_term,
             "source": y.source,
             "description": y.description,
+            "date_found": y.date_found,
             "post_date": y.post_date
         }
         return new_jd
