@@ -12,7 +12,7 @@ import database as ForkDB
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 if __name__ == '__main__':
-    # freeze_support()
+    # freeze_support()  # include this if packaging as stand alone app/freezing
     # set up mechanism for timing how long the program takes to execute
     t = time()
 
