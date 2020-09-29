@@ -1,6 +1,6 @@
 # forkwebscraper
 
-Please contact @samodle to ensure read.me is up to date.
+Please contact @samodle to ensure read.me is up to date. spoiler alert - as of 9/28/2020, its not
 
 Fork Web Scraper requires a ForkConfig.py file with the following parameters:
 
