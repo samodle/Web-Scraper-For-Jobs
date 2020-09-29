@@ -132,7 +132,7 @@ if __name__ == '__main__':
         client = MongoClient(Fork.MONGO_HOST, Fork.MONGO_PORT, username=Fork.MONGO_USERNAME,
                              password=Fork.MONGO_PASSWORD)
         db = client.jobs
-        collection = db.job_descriptions
+        collection = db.jds  # db.job_descriptions
 
     print('Scrape complete. Jobs Found: ' + str(jobs_found) + ', Time to scrape: {} min'.format(
         round((time() - t) / 60, 2)))

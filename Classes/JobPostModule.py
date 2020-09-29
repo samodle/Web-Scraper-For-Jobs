@@ -8,8 +8,8 @@ class JobPost:
         self.url = url
         self.company = company
         self.location = location
-        self.date_found = datetime.datetime.now()
-        self.search_term = search_term
+        self.dates_found = [datetime.datetime.now()]
+        self.search_terms = [search_term]
         self.source = source
         # initialize other fields
         self.company_rating = ''  # None

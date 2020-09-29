@@ -135,10 +135,10 @@ def get_document(y: JobPost):
             "salary": y.salary,
             "commitment": y.commitment_level,
             "url": y.url,
-            "search_term": y.search_term,
+            "search_terms": y.search_terms,
             "source": y.source,
             "description": y.description,
-            "date_found": y.date_found,
+            "dates_found": y.dates_found,
             "post_date": y.post_date
         }
         return new_jd
