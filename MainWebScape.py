@@ -96,7 +96,7 @@ if __name__ == '__main__':
 
         for city in range(0, Fork.num_cities):
             print('        ...' + locations.loc[city, 'city'] + ' ' + locations.loc[
-                city, 'state_id'] + ', ' + str(city) + '/' + str(Fork.num_cities))
+                city, 'state_id'] + ', ' + str(city + 1) + '/' + str(Fork.num_cities))
 
             if Fork.scrape_indeed:
                 for i in range(0, Fork.pages):
