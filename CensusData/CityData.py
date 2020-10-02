@@ -1,8 +1,7 @@
 import pandas as pd
-
+import ForkConfig as Fork
 
 def import_city_data():
-    raw_city_data = pd.read_csv("CensusData/uscitydata.csv")
+    raw_city_data = pd.read_csv(Fork.city_data_path)
     only_city_names = raw_city_data[['city', 'state_id']]
-    #  print(only_city_names.head())
     return only_city_names
