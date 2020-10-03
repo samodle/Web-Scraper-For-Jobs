@@ -157,14 +157,10 @@ def complete_job_profile(job_post: JobPost):
     for script in big_soup(["script", "style"]):  # remove all javascript and stylesheet code
         script.decompose()
 
-    # print(big_soup.prettify())
-
     parent_search_section = big_soup.find_all('div', class_='seperate-bottom tab bloc jdp-description-details')
 
     x1 = parent_search_section[0].find_all('div', class_='col big col-mobile-full')
     x0 = x1[0]
-
-    # print(x0.prettify())
 
     if x0 is not None:
         job_post.description = x0.get_text().replace('\n', ' ')
