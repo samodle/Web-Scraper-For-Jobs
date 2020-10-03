@@ -4,7 +4,6 @@ from WebScraper import Indeed
 from WebScraper import Monster
 from WebScraper import ScrapeHelper
 from WebScraper import CareerBuilder
-from CensusData import CityData
 from pymongo import MongoClient
 from time import time  # To time our operations
 import ForkConfig as Fork
@@ -92,7 +91,7 @@ if __name__ == '__main__':
 
     if Fork.scrape_census_locations:  # using Census data for cities, sorted by population
 
-        locations = CityData.import_city_data()
+        locations = ForkDB.get_top_n_cities_by_population(Fork.num_cities)
 
         for city in range(0, Fork.num_cities):
             print('        ...' + locations.loc[city, 'city'] + ' ' + locations.loc[
@@ -124,8 +123,8 @@ if __name__ == '__main__':
                 print('           ' + 'CareerBuilder URLs: {} min'.format(round((time() - t) / 60, 2)))
 
     # how many total jobs did we find?
-    for listx in master_job_list:
-        jobs_found += len(listx)
+    for list_x in master_job_list:
+        jobs_found += len(list_x)
 
     # if saving the database, open db connection
     if Fork.export_to_mongo:
@@ -150,7 +149,8 @@ if __name__ == '__main__':
             # status update
             job_found_count += len(x)
             pct_complete = round(job_found_count * 100 / jobs_found, 2)
-            print(str(pct_complete) + '% Complete. Jobs: ' + str(len(x)) + ', Net: ' + str(job_found_count) + '/' + str(jobs_found) + ', Time: {} min'.format(round((time() - t) / 60, 2)))
+            print(str(pct_complete) + '% Complete. Jobs: ' + str(len(x)) + ', Net: ' + str(job_found_count) + '/'
+                  + str(jobs_found) + ', Time: {} min'.format(round((time() - t) / 60, 2)))
 
             doc_collection = []
 
