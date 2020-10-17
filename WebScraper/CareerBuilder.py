@@ -59,10 +59,9 @@ def get_job_posts(target_url, search_term):
                 for card in parent_search_section:
                     try:
                         # print(card.prettify())
-
                         main_div = card.find_all('a')
                         # main_div2 = card.find_all('a', _class='data-results-content block job-listing-item')
-                        links = 'https://www.careerbuilder.com' + main_div[1].get('href')
+                        links = 'https://www.careerbuilder.com' + main_div[0].get('href')
 
                         name_div = card.find('div', {"class": "data-results-title"})
                         names = name_div.get_text().strip('\n')
